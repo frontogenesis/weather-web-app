@@ -1,17 +1,14 @@
 const createError = require('http-errors');
 const express = require('express');
 const expressValidator = require('express-validator');
+const flash = require('connect-flash');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy
 const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const mongo = require('mongodb');
-const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/loginapp');
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error'));
-db.once('open', () => { console.log('Connected to database') });
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -29,12 +26,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Express Session
+app.use(session({
+  secret: 'secret',
+  saveUninitialized: true,
+  resave: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
 // BodyParser Middleware - can go away soon
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 // Express Validator
 app.use(expressValidator());
+
+// Connect Flash
+app.use(flash());
+
+// Global Vars
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  res.locals.user = req.user || null;
+  next();
+});
 
 // Register Endpoints
 app.use('/', indexRouter);
