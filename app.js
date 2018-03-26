@@ -1,3 +1,5 @@
+require('./config/config');
+
 const createError = require('http-errors');
 const express = require('express');
 const expressValidator = require('express-validator');
@@ -9,6 +11,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const { mongoose } = require('./db/mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -28,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Express Session
 app.use(session({
-  secret: 'secret',
+  secret: process.env.SESSION_SECRET,
   saveUninitialized: true,
   resave: true
 }));

@@ -3,14 +3,8 @@ const router = express.Router();
 const _ = require('lodash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const mongo = require('mongodb');
-const mongoose = require('mongoose');
 
 const User = require('../models/user');
-
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/loginapp');
-const db = mongoose.connection;
 
 /* Register page */
 router.get('/register', function(req, res, next) {
