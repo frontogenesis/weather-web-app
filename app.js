@@ -13,12 +13,13 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { mongoose } = require('./db/mongoose');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const { passportLocalStrategy } = require('./middleware/authenticate');
 
-var app = express();
+const app = express();
 
-// view engine setup
+// View Engine (Handlebars) Setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
@@ -35,17 +36,29 @@ app.use(session({
   saveUninitialized: true,
   resave: true
 }));
+
+// Passport Configuration
+const { User } = require('./models/user');
 app.use(passport.initialize());
 app.use(passport.session());
+passportLocalStrategy;
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+passport.deserializeUser((id, done) => {
+  User.getUserById(id, (err, user) => {
+    done(err, user);
+  });
+});
 
-// BodyParser Middleware - can go away soon
+// BodyParser Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 // Express Validator
 app.use(expressValidator());
 
-// Connect Flash
+// Connect Flash Messages
 app.use(flash());
 
 // Global Vars
@@ -62,12 +75,12 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
