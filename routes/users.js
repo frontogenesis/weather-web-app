@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const _ = require('lodash');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 
 const { User } = require('../models/user');
 
@@ -18,48 +16,72 @@ router.get('/login', (req, res, next) => {
 
 /* Register users - Server */
 router.post('/register', (req, res) => {
-  var name = req.body.name;
-  var email = req.body.email;
-  var username = req.body.username;
-  var password = req.body.password;
-  var password2 = req.body.password2;
+  const account = new User({
+    email: req.body.email,
+    username: req.body.username
+  });
+  let password = req.body.password;
 
-  // Validation
-  req.checkBody('name', 'Name is required').notEmpty();
-  req.checkBody('email', 'Email is required').notEmpty();
-  req.checkBody('email', 'Email is not valid').isEmail();
-  req.checkBody('username', 'Username is required').notEmpty();
-  req.checkBody('password', 'Password is required').notEmpty();
-  req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
-
-  var errors = req.validationErrors();
-
-  if (errors) {
-    res.render('register', {
-      errors: errors
-    });
-  } else {
-    var newUser = new User({
-      name: name,
-      email: email,
-      username: username,
-      password: password
+  User.register(account, password)
+    .then(() => {
+      passport.authenticate('local')
+      (req, res, () => {
+        req.flash('success_msg', 'Congratulations! You are registered. Please log in.');
+        res.redirect('/users/login');
+      })
+    }).catch((e) => {
+      res.render('register', {
+        info: "The account you entered already exists."
+      });
     });
 
-    User.createUser(newUser, (err, user) => {
-      if (err) throw err;
-      console.log(user);
-    });
+  
+  // var name = req.body.name;
+  // var email = req.body.email;
+  // var username = req.body.username;
+  // var password = req.body.password;
+  // var password2 = req.body.password2;
 
-    req.flash('success_msg', 'You are registered and can now login');
+  // // Validation
+  // req.checkBody('name', 'Name is required').notEmpty();
+  // req.checkBody('email', 'Email is required').notEmpty();
+  // req.checkBody('email', 'Email is not valid').isEmail();
+  // req.checkBody('username', 'Username is required').notEmpty();
+  // req.checkBody('password', 'Password is required').notEmpty();
+  // req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
 
-    res.redirect('/users/login');
-  }
+  // var errors = req.validationErrors();
+
+  // if (errors) {
+  //   res.render('register', {
+  //     errors: errors
+  //   });
+  // } else {
+  //   var newUser = new User({
+  //     name: name,
+  //     email: email,
+  //     username: username,
+  //     password: password
+  //   });
+
+  //   User.createUser(newUser, (err, user) => {
+  //     if (err) throw err;
+  //     console.log(user);
+  //   });
+
+  //   req.flash('success_msg', 'You are registered and can now login');
+
+  //   res.redirect('/users/login');
+  // }
 });
 
 /* Login */
 router.post('/login',
-  passport.authenticate('local', { successRedirect: '/', failureRedirect: '/users/login', failureFlash: true }), (req, res) => {
+  passport.authenticate('local', { 
+    successRedirect: '/', 
+    failureRedirect: '/users/login', 
+    failureFlash: true 
+  }), (req, res) => {
     res.redirect('/');
   });
 
@@ -68,6 +90,17 @@ router.get('/logout', (req, res) => {
   req.logout();
   req.flash('success_msg', 'You are logged out');
   res.redirect('/users/login');
+});
+
+/* Log in with Google */
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+/* Callback Route for Google redirect */
+router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
+  // res.send(req.user);
+  res.redirect('/');
 });
 
 module.exports = router;

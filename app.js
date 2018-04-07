@@ -6,7 +6,8 @@ const expressValidator = require('express-validator');
 const flash = require('connect-flash');
 const session = require('express-session');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy
+const googlePassportSetup = require('./middleware/google');
+const localPassportSetup = require('./middleware/authenticate');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -15,7 +16,6 @@ const { mongoose } = require('./db/mongoose');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
-const { passportLocalStrategy } = require('./middleware/authenticate');
 
 const app = express();
 
@@ -38,18 +38,8 @@ app.use(session({
 }));
 
 // Passport Configuration
-const { User } = require('./models/user');
 app.use(passport.initialize());
 app.use(passport.session());
-passportLocalStrategy;
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-passport.deserializeUser((id, done) => {
-  User.getUserById(id, (err, user) => {
-    done(err, user);
-  });
-});
 
 // BodyParser Middleware
 app.use(bodyParser.json());

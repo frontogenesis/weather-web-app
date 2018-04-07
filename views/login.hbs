@@ -1,8 +1,8 @@
 <body class="text-center">
     <form class="form-signin" autocomplete="off" method="post">
         <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="username" class="sr-only">Username</label>
-        <input type="text" name="username" class="form-control" placeholder="Username" required autofocus>
+        <label for="email" class="sr-only">Email</label>
+        <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
         <input type="password" name="password" class="form-control" placeholder="Password" required>
         {{!-- <div class="checkbox mb-3">
@@ -11,5 +11,6 @@
             </label>
         </div> --}}
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <a href="google"><img src="/images/google_signin_buttons/btn_google_signin_dark_normal_web.png"></a>
     </form>
 </body>
